@@ -1,0 +1,6 @@
+; $Id$
+name = Webform Dynamic Select
+description = Adds a dynamic select component to the webform module.
+project = webform
+dependencies = webform
+

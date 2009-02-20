@@ -1,0 +1,8 @@
+<?php
+
+/**
+* Implementation of hook_load_webform_components
+**/
+function dynamic_select_load_webform_components() {
+  return webform_load_webform_components('dynamic_select');
+}

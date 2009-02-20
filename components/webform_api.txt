@@ -1,0 +1,94 @@
+Webforms 5.1 Component API Documentation
+
+The Drupal webforms module is a really impressive project. It gives users the ability to quickly assemble forms and store their results. According to a post by its author, webforms is also one of the largest Drupal modules available. One component webforms is lacking (as of this writing) is a formal API. By deconstructing the components found within webforms and reading the forums I was able to piece together a rudimentry API spec for adding webform components.
+
+I needed to develop a simple webform component that displays an input select box populated by dynamic data. Rather than hack the core I chose to attempt a module write. For the most part it was doable. The only "forking" I needed to do was to add a patch referenced here (http://drupal.org/node/340241). This patch creates the hook hook_load_webform_components which allows your module to communicate with webforms.
+
+Once the hook_oad_webform_components is installed adding a webform component is achieved by adding a hook in your module and a components folder in your module. 
+
+Ex: An example of a module calling the load_webform_components hook.
+
+<code>
+/**
+* Implementation of hook_load_webform_components
+**/
+function dynamic_select_load_webform_components() {
+  return webform_load_webform_components('dynamic_select');
+}
+</code>
+
+The load_webform_components hook is really simple. It looks for a "components directory" within your module and includes all the "*.inc" files within. The include files are really where all the magic happens. The best way to reference the anatomy of a component is to look at those present in the webforms directory. Below I'll attempt to catalog the minimum number of functions required for a basic component.
+
+A few notes: 
+ - The naming convention for functions generally follows "_webform_functioname_componentname()"
+ - Nothing is set in stone! The API can change at anytime so flexibility in frefactoring is a must.
+ - In the naming convention substitute component with your component name.
+ 
+ _webform_help_component
+ 
+ _webform_defaults_component 
+ This function is used to define component defaults. Below is an example straight from the select component.
+ 
+ function _webform_defaults_select() {
+   return array(
+     'name' => '',
+     'form_key' => NULL,
+     'email' => 1,
+     'mandatory' => 0,
+     'pid' => 0,
+     'weight' => 0,
+     'value' => '',
+     'extra' => array(
+       'items' => '',
+       'email' => 0,
+       'multiple' => NULL,
+       'aslist' => NULL,
+       'description' => '',
+     ),
+   );
+  }
+  
+_webform_edit_component
+This function is where the component edit form is defined. It uses FAPI for constructing the elements. It allows you to store any number of variables but putting them in the $component['extra']['variable_name'] scope. The 'extra' scope comes in real handy when working with complex components.
+
+The $component is an array representing the component being edited. Below is really simple example. Please reference the select.inc or textfield.inc files from the webform module for complete functional examples.
+
+function _webform_edit_mycomponent($currfield) {
+  $edit_fields = array();
+  $edit_fields['value'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Default value'),
+    '#default_value' => $currfield['value'],
+    '#description' => t('The default value of the field.') . theme('webform_token_help'),
+    '#size' => 60,
+    '#maxlength' => 127,
+    '#weight' => 0,
+  );
+  return $edit_fields
+}
+
+_webform_edit_validate_component
+This function validates your component
+
+_webform_render_component
+
+_webform_submission_display_component
+
+_webform_submit_component
+
+theme_webform_mail_component
+
+_webform_analysis_rows_component
+
+_webform_table_data_component
+
+_webform_csv_headers_component
+
+_webform_csv_data_component
+
+There is no questioning about the awesomeness that is webforms. That being said, with great awesomeness comes the need for even more... well, awesomeness! Having worked with webforms in the battlefield there is room for improvement, particularly with API level functionality. Going forward it would be great to see a Export Format API. Theming and email call back functionality is also a huge want.
+
+
+
+
+  

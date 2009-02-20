@@ -1,0 +1,7 @@
+Description:
+------------
+This module adds a custom_select component to the webform module. It is dependent on the hook_load_webform_components hook path presented here: http://drupal.org/node/340241
+
+Code Contributions
+------------------
+ngmaloney
