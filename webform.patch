@@ -1,0 +1,62 @@
+--- webform.module	2009-02-14 03:18:17.000000000 -0500
++++ webform.module.new	2009-02-21 14:14:46.000000000 -0500
+@@ -2291,18 +2291,18 @@ function webform_load_components($return
+   static $component_list, $enabled_list;
+ 
+   if (!isset($component_list) || $reset) {
++    // Call a hook that returns an array of an array - see example below
++    $all_components = module_invoke_all('load_webform_components');
++    // Initialize arrays so that array_merge() is happy
+     $component_list = array();
+     $enabled_list = array();
+-    $path = drupal_get_path('module', 'webform') .'/components';
+-    $files = file_scan_directory($path, '^.*\.inc$');
+-    foreach ($files as $filename => $file) {
+-      $enabled = variable_get('webform_enable_'. $file->name, 1);
+-      if ($return_all || $enabled) {
+-        include_once($filename);
+-        $component_list[$file->name] = t($file->name);
++    // For each hook, check to see it's returned sensible data and merge in
++    foreach($all_components as $module_components) {
++      if (is_array($module_components["components"])) {
++        $component_list = array_merge($component_list, $module_components["components"]);
+       }
+-      if ($enabled) {
+-        $enabled_list[$file->name] = t($file->name);
++      if (is_array($module_components["enabled"])) {
++        $enabled_list   = array_merge($enabled_list,   $module_components["enabled"]);
+       }
+     }
+   }
+@@ -2311,3 +2311,31 @@ function webform_load_components($return
+   return $return_all ? $component_list : array_intersect_assoc($component_list, $enabled_list);
+ }
+ 
++/**
++ * Implementation of hook_load_webform_components
++ *
++ * This can be called from other hooks e.g:
++ *
++ *   function mymodule_load_webform_components() { 
++ *     return webform_load_webform_components('mymodule'); 
++ *   }
++ */
++function webform_load_webform_components($module = 'webform') {
++  $component_list = array();
++  $enabled_list = array();
++  $path = drupal_get_path('module', $module) ."/components";
++  $files = file_scan_directory($path, '^.*\.inc$');
++  foreach ($files as $filename => $file) {
++    $enabled = variable_get('webform_enable_'. $file->name, 1);
++    if ($return_all || $enabled) {
++      include_once($filename);
++      $component_list[$file->name] = t($file->name);
++    }
++    if ($enabled) {
++      $enabled_list[$file->name] = t($file->name);
++    }
++  }
++  return array(array('components' => $component_list, 'enabled' => $enabled_list));
++ 
++}
++
