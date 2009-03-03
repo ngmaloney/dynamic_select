@@ -1,6 +1,10 @@
 <?php
 
 /**
+  TODO: Add better validation  
+**/
+
+/**
  * Module specific instance of hook_help().
  */
 function _webform_help_dynamic_select($section) {
@@ -29,7 +33,7 @@ function _webform_defaults_dynamic_select() {
     'value' => '',
     'extra' => array(
       'items' => '',
-      'options' => array(),
+      'options' => NULL,
       'email' => 0,
       'multiple' => NULL,
       'aslist' => NULL,
@@ -75,7 +79,7 @@ function _webform_edit_dynamic_select($currfield) {
     '#rows' => 5,
     '#weight' => 1,
     '#required' => FALSE,
-    '#validate' => array('_webform_edit_validate_dynamic_select' => array()),
+    //'#validate' => array('_webform_edit_validate_dynamic_select' => array()),
   );
   return $edit_fields;
 }
@@ -85,6 +89,7 @@ function _webform_edit_dynamic_select($currfield) {
  * TODO: Create validation rules
  */
 function _webform_edit_validate_dynamic_select($element) {
+  watchdog('validate',serialize($element));
   return TRUE;
 }
 
@@ -103,6 +108,8 @@ function _webform_render_dynamic_select($component) {
     '#weight'        => $component['weight'],
     '#description'   => _webform_filter_descriptions($component['extra']['description']),
     '#prefix'        => '<div class="webform-component-'. $component['type'] .'" id="webform-component-'. $component['form_key'] .'">',
+    '#validate'      => array('_webform_edit_validate_dynamic_select' => array()),
+    '#DANGEROUS_SKIP_CHECK'=>TRUE, // A necessary evil for dynamic selects
     '#suffix'        => '</div>',
   );
 
